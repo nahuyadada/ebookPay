@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { adminClient } from "@/lib/supabase";
 
 export async function GET(
@@ -26,21 +26,34 @@ export async function GET(
     return new Response("Download limit reached for this link.", { status: 403 });
   }
 
+  // Increment first so repeated retries still count
   await supabase
     .from("download_tokens")
     .update({ download_count: tokenRow.download_count + 1 })
     .eq("token", token);
 
-  const { data: signedData, error: signedError } = await supabase.storage
+  // Stream the file directly — avoids cross-origin redirect issues
+  const { data: fileBlob, error: downloadError } = await supabase.storage
     .from(process.env.SUPABASE_BUCKET_NAME!)
-    .createSignedUrl(process.env.SUPABASE_PDF_PATH!, 60 * 10, {
-      download: "Complete_Guide_To_Passive_Income.pdf",
-    });
+    .download(process.env.SUPABASE_PDF_PATH!);
 
-  if (signedError || !signedData) {
-    console.error("Signed URL error:", signedError);
-    return new Response("Failed to generate download.", { status: 500 });
+  if (downloadError || !fileBlob) {
+    console.error("Supabase storage download error:", downloadError);
+    return new Response(
+      "Could not retrieve the file. Please contact support.",
+      { status: 500 }
+    );
   }
 
-  return NextResponse.redirect(signedData.signedUrl);
+  const buffer = await fileBlob.arrayBuffer();
+
+  return new Response(buffer, {
+    headers: {
+      "Content-Type": "application/pdf",
+      "Content-Disposition":
+        'attachment; filename="Complete_Guide_To_Passive_Income.pdf"',
+      "Content-Length": buffer.byteLength.toString(),
+      "Cache-Control": "no-store",
+    },
+  });
 }
