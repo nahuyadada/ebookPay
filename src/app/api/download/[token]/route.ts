@@ -10,7 +10,7 @@ export async function GET(
 
   const { data: tokenRow, error } = await supabase
     .from("download_tokens")
-    .select("id, download_count, max_downloads, expires_at")
+    .select("id, download_count, expires_at")
     .eq("token", token)
     .single();
 
@@ -22,11 +22,7 @@ export async function GET(
     return new Response("This download link has expired.", { status: 410 });
   }
 
-  if (tokenRow.download_count >= tokenRow.max_downloads) {
-    return new Response("Download limit reached for this link.", { status: 403 });
-  }
-
-  // Increment first so repeated retries still count
+  // Track count for analytics only — no download limit enforced
   await supabase
     .from("download_tokens")
     .update({ download_count: tokenRow.download_count + 1 })
@@ -51,7 +47,7 @@ export async function GET(
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition":
-        'attachment; filename="Complete_Guide_To_Passive_Income.pdf"',
+        'attachment; filename="SSEMT.pdf"',
       "Content-Length": buffer.byteLength.toString(),
       "Cache-Control": "no-store",
     },

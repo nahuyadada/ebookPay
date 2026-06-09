@@ -79,6 +79,8 @@ function CheckoutButtons() {
               setProcessing(false);
               return;
             }
+            // localStorage persists across page refreshes unlike sessionStorage
+            localStorage.setItem("ebook_download_url", result.downloadUrl);
             router.push("/success");
           }}
           onError={() => {

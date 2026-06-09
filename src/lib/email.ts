@@ -78,7 +78,7 @@ export async function sendDownloadEmail(
               Download Ebook
             </a>
             <p style="font-size:12px;color:#94a3b8;margin:10px 0 0">
-              Link valid for 7 days · up to 5 downloads
+              Link valid for 7 days
             </p>
           </div>
 
