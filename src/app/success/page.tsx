@@ -1,17 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function SuccessPage() {
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
-    // localStorage persists across refreshes — don't clear it so
-    // the button stays visible if the user comes back to this page
     const url = localStorage.getItem("ebook_download_url");
-    if (url) setDownloadUrl(url);
-  }, []);
+    if (!url) {
+      router.replace("/");
+      return;
+    }
+    setDownloadUrl(url);
+  }, [router]);
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 flex items-center justify-center px-6">
