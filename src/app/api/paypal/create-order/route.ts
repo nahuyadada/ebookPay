@@ -6,7 +6,8 @@ export async function POST() {
     const price = process.env.EBOOK_PRICE ?? "14.99";
     const order = await createPayPalOrder(price);
     return NextResponse.json({ id: order.id });
-  } catch {
+  } catch (err) {
+    console.error("create-order error:", err);
     return NextResponse.json(
       { error: "Failed to create order" },
       { status: 500 }

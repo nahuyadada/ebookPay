@@ -18,6 +18,10 @@ async function getAccessToken(): Promise<string> {
   });
 
   const data = await res.json();
+  if (!data.access_token) {
+    console.error("PayPal auth failed:", JSON.stringify(data));
+    throw new Error(`PayPal auth failed: ${data.error_description ?? data.message ?? "unknown"}`);
+  }
   return data.access_token as string;
 }
 
